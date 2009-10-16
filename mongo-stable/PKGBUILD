@@ -1,0 +1,47 @@
+#Maintainer: David Lehmann <dtl@voxelbrain.com>
+#Contributor: Sebastian Friedel <sef@voxelbrain.com>
+# with help from mstearn from #mongodb freenode
+pkgname=mongodb-stable-git
+pkgver=20091016
+pkgrel=2
+pkgdesc="a high-performance, open source, schema-free document-oriented database."
+arch=('i686' 'x86_64')
+url="http://www.mongodb.org"
+license=('AGPL')
+makedepends=('git' 'scons')
+depends=('boost' 'spidermonkey' 'pcre')
+provides=('mongodb')
+conflicts=('mongodb')
+source=('mongodb.rc' 'mongodb.conf')
+install=('mongodb-stable-git.install')
+md5sums=('2940f4feff294794fea99ca0e8422572'
+         '199b232c95d37405ebda53d2753bd020')
+
+_gitroot="git://github.com/mongodb/mongo.git"
+_gitname="mongo"
+_gitbranch="v1.0"
+
+build() {
+    if [ -d ${srcdir}/$_gitname ] ; then
+        cd $_gitname && git pull origin
+        msg "The local files are updated."
+    else
+    git clone $_gitroot || return 1
+        cd ${srcdir}/${_gitname}
+        msg "Switch branch to ${_gitbranch}"
+        git checkout -b ${_gitbranch} origin/${_gitbranch} || return 1
+    fi
+
+    msg "GIT checkout done or server timeout"
+    cd ${srcdir}
+    rm -rf ${_gitname}-build
+    git clone $_gitname $_gitname-build
+    cd ${srcdir}/$_gitname-build
+
+    scons all || return 1
+    scons --prefix="$startdir/pkg/usr" install || return 1
+    install -Dm 755 "$startdir/mongodb.rc" "$startdir/pkg/etc/rc.d/mongodb" || return 1
+    install -Dm 644 "$startdir/mongodb.conf" "$startdir/pkg/etc/conf.d/mongodb" || return 1
+    install -dm 700 "$startdir/pkg/var/lib/mongodb" || return 1
+}
+
