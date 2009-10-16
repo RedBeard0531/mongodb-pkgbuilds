@@ -16,8 +16,8 @@ source=("$pkgname-$pkgver.tar.gz::http://github.com/mongodb/mongo/tarball/r$pkgv
         'mongodb.rc'
         'mongodb.conf')
 md5sums=('04f92ecbacd0be1f20173f8455af08d3'
-         '2940f4feff294794fea99ca0e8422572'
-         '199b232c95d37405ebda53d2753bd020')
+         '18f3f2245ceaea54529568361a681c2d'
+         '73a5a292d49209f31f35378e9f74ecf4')
 install=('mongodb.install')
 
 build() {
@@ -32,7 +32,7 @@ package() {
     cd $(ls -F | grep '/$') # dir includes git hash
     scons --prefix="$startdir/pkg/usr" install || return 1
     install -Dm 755 "$startdir/mongodb.rc" "$pkgdir/etc/rc.d/mongodb" || return 1
-    install -Dm 644 "$startdir/mongodb.conf" "$pkgdir/etc/conf.d/mongodb" || return 1
+    install -Dm 644 "$startdir/mongodb.conf" "$pkgdir/etc/mongodb.conf" || return 1
     install -dm 700 "$pkgdir/var/lib/mongodb" || return 1
 
     if [ -d "$pkgdir/usr/lib64" ]

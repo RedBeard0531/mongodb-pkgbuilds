@@ -3,13 +3,12 @@
 
 . /etc/rc.conf
 . /etc/rc.d/functions
-. /etc/conf.d/mongodb
 
 PID=`pidof /usr/bin/mongod`
 case "$1" in
   start)
     stat_busy "Starting mongod"
-    [ -z "$PID" ] && /bin/su mongodb -s /bin/sh -c "/usr/bin/mongod ${MONGOD_ARGS} run &" > /var/log/mongod 2>&1
+    [ -z "$PID" ] && /bin/su mongodb -s /bin/sh -c "/usr/bin/mongod --config /etc/mongodb.conf run &" > /var/log/mongod 2>&1
     if [ $? -gt 0 ]; then
       stat_fail
     else
@@ -23,6 +22,12 @@ case "$1" in
     if [ $? -gt 0 ]; then
       stat_fail
     else
+      #wait for the server to finish shutting down
+      while [ -n "$(pidof /usr/bin/mongod)" ]
+      do
+          sleep 1
+      done
+
       rm_daemon mongod
       stat_done
     fi
